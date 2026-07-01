@@ -1,0 +1,24 @@
+.navContainer {
+  display: flex;
+  justify-content: space-between;
+  padding: 15px;
+  height: 64px;
+  background-color: #1a1a1a;
+  border-bottom: 1px solid #333333;
+}
+
+.logo {
+  color: #ffffff;
+  font-weight: bold;
+}
+
+.linkList {
+  display: flex;
+  gap: 30px;
+  list-style: none;
+}
+
+.navLink {
+  color: #ffffff;
+  text-decoration: none;
+}
