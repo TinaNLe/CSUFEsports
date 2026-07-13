@@ -1,0 +1,15 @@
+.section {
+  padding: 80px 60px;
+  max-width: 800px;
+}
+
+.heading {
+  font-size: 40px;
+  font-weight: 900;
+  margin-bottom: 20px;
+}
+
+.text {
+  font-size: 18px;
+  line-height: 1.6;
+}
