@@ -1,9 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
 import { Barlow } from "next/font/google";
 import styles from "./navbar.module.css";
 
@@ -22,35 +20,9 @@ const links = [
 ];
 
 export default function NavBar() {
-  const pathname = usePathname();
-  const isHome = pathname === "/";
-
-  const [scrolled, setScrolled] = useState(false);
-  const [stayVisible, setStayVisible] = useState(false);
-
-  useEffect(() => {
-    if (!isHome) return;
-
-    const handleScroll = () => setScrolled(window.scrollY > 50);
-    handleScroll();
-    window.addEventListener("scroll", handleScroll);
-
-    const handleVideoEnded = () => setStayVisible(true);
-    window.addEventListener("hero-video-ended", handleVideoEnded);
-
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-      window.removeEventListener("hero-video-ended", handleVideoEnded);
-    };
-  }, [isHome]);
-
-  const visible = !isHome || scrolled || stayVisible;
-
   return (
     <nav
-      className={`${styles.navContainer} ${barlow.variable} ${
-        visible ? styles.visible : ""
-      }`}
+      className={`${styles.navContainer} ${barlow.variable} ${styles.visible}`}
     >
       <Link href="/" className={styles.logo}>
         <Image
