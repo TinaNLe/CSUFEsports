@@ -1,0 +1,80 @@
+.footer {
+  background-color: #000c1a;
+  color: #fff;
+  padding: 40px 40px 20px;
+  margin-top: auto;
+}
+
+.top {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  border-bottom: 1px solid #333;
+  padding-bottom: 24px;
+}
+
+.columns {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  gap: 40px;
+}
+
+.left,
+.column,
+.right {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.partnerText {
+  font-size: 14px;
+  color: #aaa;
+  max-width: 260px;
+}
+
+.brand {
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.linksHeading {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #fff;
+  margin-bottom: 10px;
+}
+
+.linksTable {
+  border-collapse: collapse;
+}
+
+.linksTable td {
+  padding: 4px 0;
+}
+
+.link {
+  color: #aaa;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  transition: color 0.2s ease;
+}
+
+.link:hover {
+  color: #fff;
+}
+
+.bottom {
+  padding-top: 20px;
+  font-size: 13px;
+  color: #555;
+  text-align: center;
+}

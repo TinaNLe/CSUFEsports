@@ -1,8 +1,7 @@
-"use client";
-
-import { useRef } from "react";
 import Link from "next/link";
 import styles from "./page.module.css";
+import HeroVideo from "./components/HeroVideo";
+import { getAllNews } from "@/lib/news";
 
 const events = [
   { game: "Valorant", title: "CSUF vs. UCLA Scrimmage", date: "TBD" },
@@ -11,26 +10,11 @@ const events = [
 ];
 
 export default function Home() {
-  const videoRef = useRef<HTMLVideoElement>(null);
-
-  const handleVideoEnded = () => {
-    window.dispatchEvent(new Event("hero-video-ended"));
-    videoRef.current?.play();
-  };
+  const news = getAllNews().slice(0, 3);
 
   return (
     <>
-      <section id="media" className={styles.hero}>
-        <video
-          ref={videoRef}
-          className={styles.heroVideo}
-          src="/videos/hero.mp4"
-          autoPlay
-          muted
-          playsInline
-          onEnded={handleVideoEnded}
-        />
-      </section>
+      <HeroVideo />
 
       <section id="events" className={styles.events}>
         <h1 className={styles.eventsHeading}>
@@ -47,8 +31,29 @@ export default function Home() {
         </div>
       </section>
 
+      {news.length > 0 && (
+        <section id="news" className={styles.events}>
+          <h1 className={styles.eventsHeading}>
+            <Link href="/news">Latest News</Link>
+          </h1>
+          <div className={styles.eventsList}>
+            {news.map((article) => (
+              <Link
+                key={article.slug}
+                href={`/news/${article.slug}`}
+                className={styles.eventCard}
+              >
+                <div className={styles.eventGame}>{article.date}</div>
+                <div className={styles.eventTitle}>{article.title}</div>
+                <div className={styles.eventDate}>{article.excerpt}</div>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+
       <section id="teams">
-        
+
       </section>
 
       <section id="leadership">

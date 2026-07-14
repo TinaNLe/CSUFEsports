@@ -13,6 +13,7 @@ const barlow = Barlow({
 
 const links = [
   { href: "/about", label: "ABOUT" },
+  { href: "/news", label: "NEWS" },
   { href: "/events", label: "EVENTS" },
   { href: "/teams", label: "TEAMS" },
   { href: "/sponsors", label: "SPONSORS" },
