@@ -1,38 +1,98 @@
-import fs from "fs";
-import path from "path";
-import matter from "gray-matter";
+import { Client, isFullBlock } from "@notionhq/client";
+import { NotionToMarkdown } from "notion-to-md";
 
-const NEWS_DIR = path.join(process.cwd(), "src/content/news");
+const notion = new Client({ auth: process.env.NOTION_API_KEY });
+const n2m = new NotionToMarkdown({ notionClient: notion });
+
+// The News tab is a plain Notion page — every child page under it is one article.
+const ROOT_PAGE_ID = process.env.NOTION_NEWS_PAGE_ID ?? "";
+
+const isConfigured = Boolean(process.env.NOTION_API_KEY && ROOT_PAGE_ID);
+
+if (!isConfigured) {
+  console.warn(
+    "[news] NOTION_API_KEY / NOTION_NEWS_PAGE_ID are not set — the News tab will show no articles until configured (see .env.local.example)."
+  );
+}
 
 export type NewsMeta = {
   slug: string;
   title: string;
   date: string;
   excerpt: string;
-  author?: string;
+  pageId: string;
 };
 
-export function getAllNews(): NewsMeta[] {
-  const files = fs.readdirSync(NEWS_DIR).filter((f) => f.endsWith(".mdx"));
-
-  const articles = files.map((filename) => {
-    const slug = filename.replace(/\.mdx$/, "");
-    const raw = fs.readFileSync(path.join(NEWS_DIR, filename), "utf8");
-    const { data } = matter(raw);
-
-    return {
-      slug,
-      title: data.title as string,
-      date: data.date as string,
-      excerpt: (data.excerpt as string) ?? "",
-      author: data.author as string | undefined,
-    };
-  });
-
-  return articles.sort((a, b) => (a.date < b.date ? 1 : -1));
+function slugify(title: string): string {
+  return title
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
 }
 
-export function getNewsSource(slug: string): string {
-  const filePath = path.join(NEWS_DIR, `${slug}.mdx`);
-  return fs.readFileSync(filePath, "utf8");
+function excerptFrom(markdown: string): string {
+  const line = markdown
+    .split("\n")
+    .map((l) => l.trim())
+    .find((l) => l && !l.startsWith("#"));
+  if (!line) return "";
+  return line.length > 160 ? `${line.slice(0, 160)}…` : line;
+}
+
+async function listArticlePages() {
+  const response = await notion.blocks.children.list({ block_id: ROOT_PAGE_ID });
+  return response.results
+    .filter(isFullBlock)
+    .filter((block) => block.type === "child_page")
+    .map((block) => ({
+      pageId: block.id,
+      title: block.child_page.title,
+      date: block.created_time.slice(0, 10),
+    }));
+}
+
+export async function getAllNews(): Promise<NewsMeta[]> {
+  if (!isConfigured) return [];
+
+  const pages = await listArticlePages();
+  pages.sort((a, b) => (a.date < b.date ? 1 : -1));
+
+  const articles = await Promise.all(
+    pages.map(async (page) => {
+      const markdown = await getNewsMarkdown(page.pageId);
+      return {
+        slug: slugify(page.title),
+        title: page.title,
+        date: page.date,
+        excerpt: excerptFrom(markdown),
+        pageId: page.pageId,
+      };
+    })
+  );
+
+  return articles;
+}
+
+export async function getNewsBySlug(slug: string): Promise<NewsMeta | null> {
+  if (!isConfigured) return null;
+
+  const pages = await listArticlePages();
+  const page = pages.find((p) => slugify(p.title) === slug);
+  if (!page) return null;
+
+  const markdown = await getNewsMarkdown(page.pageId);
+  return {
+    slug,
+    title: page.title,
+    date: page.date,
+    excerpt: excerptFrom(markdown),
+    pageId: page.pageId,
+  };
+}
+
+export async function getNewsMarkdown(pageId: string): Promise<string> {
+  const mdBlocks = await n2m.pageToMarkdown(pageId);
+  const { parent } = n2m.toMarkdownString(mdBlocks);
+  return parent ?? "";
 }

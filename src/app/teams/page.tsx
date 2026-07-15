@@ -1,5 +1,4 @@
 import styles from "../section.module.css";
-import Marquee from "../components/Marquee";
 
 export default function TeamsPage() {
   return (
@@ -11,9 +10,6 @@ export default function TeamsPage() {
           Team pages are coming soon.
         </p>
       </section>
-
-      <Marquee text="CSUF Gaming & Esports" speed={30} />
-      
     </div>
   );
 }

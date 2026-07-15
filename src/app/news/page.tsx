@@ -2,8 +2,10 @@ import Link from "next/link";
 import styles from "./news.module.css";
 import { getAllNews } from "@/lib/news";
 
-export default function NewsPage() {
-  const articles = getAllNews();
+export const revalidate = 60;
+
+export default async function NewsPage() {
+  const articles = await getAllNews();
 
   return (
     <div style={{ paddingTop: "80px" }}>

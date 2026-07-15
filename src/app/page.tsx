@@ -2,15 +2,15 @@ import Link from "next/link";
 import styles from "./page.module.css";
 import HeroVideo from "./components/HeroVideo";
 import { getAllNews } from "@/lib/news";
+import { getAllEvents } from "@/lib/events";
 
-const events = [
-  { game: "Valorant", title: "CSUF vs. UCLA Scrimmage", date: "TBD" },
-  { game: "League of Legends", title: "Fall Invitational", date: "TBD" },
-  { game: "Super Smash Bros.", title: "Titan Smash Weekly", date: "TBD" },
-];
+export const revalidate = 60;
 
-export default function Home() {
-  const news = getAllNews().slice(0, 3);
+export default async function Home() {
+  const [news, events] = await Promise.all([
+    getAllNews().then((articles) => articles.slice(0, 3)),
+    getAllEvents().then((items) => items.slice(0, 3)),
+  ]);
 
   return (
     <>
@@ -22,7 +22,7 @@ export default function Home() {
         </h1>
         <div className={styles.eventsList}>
           {events.map((event) => (
-            <div key={event.title} className={styles.eventCard}>
+            <div key={event.id} className={styles.eventCard}>
               <div className={styles.eventGame}>{event.game}</div>
               <div className={styles.eventTitle}>{event.title}</div>
               <div className={styles.eventDate}>{event.date}</div>

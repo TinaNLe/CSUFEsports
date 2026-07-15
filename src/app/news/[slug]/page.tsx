@@ -1,11 +1,13 @@
 import { notFound } from "next/navigation";
-import matter from "gray-matter";
 import { MDXRemote } from "next-mdx-remote/rsc";
 import styles from "../news.module.css";
-import { getAllNews, getNewsSource } from "@/lib/news";
+import { getAllNews, getNewsBySlug, getNewsMarkdown } from "@/lib/news";
 
-export function generateStaticParams() {
-  return getAllNews().map((article) => ({ slug: article.slug }));
+export const revalidate = 60;
+
+export async function generateStaticParams() {
+  const articles = await getAllNews();
+  return articles.map((article) => ({ slug: article.slug }));
 }
 
 export default async function NewsArticlePage({
@@ -15,23 +17,20 @@ export default async function NewsArticlePage({
 }) {
   const { slug } = await params;
 
-  let source: string;
-  try {
-    source = getNewsSource(slug);
-  } catch {
+  const article = await getNewsBySlug(slug);
+  if (!article) {
     notFound();
   }
 
-  const { data, content } = matter(source);
+  const content = await getNewsMarkdown(article.pageId);
 
   return (
     <div style={{ paddingTop: "80px" }}>
       <article className={styles.article}>
-        <span className={styles.date}>{data.date}</span>
+        <span className={styles.date}>{article.date}</span>
         <h1 className={styles.heading} style={{ fontSize: "44px" }}>
-          {data.title}
+          {article.title}
         </h1>
-        {data.author && <p className={styles.author}>By {data.author}</p>}
         <div className={styles.prose}>
           <MDXRemote source={content} />
         </div>

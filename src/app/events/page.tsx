@@ -1,18 +1,18 @@
 import styles from "../page.module.css";
+import { getAllEvents } from "@/lib/events";
 
-const events = [
-  { game: "Valorant", title: "Scrimmage", date: "TBD" },
-  { game: "League of Legends", title: "CLOL Invitational", date: "TBD" },
-  { game: "CS2", title: "CCC", date: "TBD" },
-];
+export const revalidate = 60;
 
-export default function EventsPage() {
+export default async function EventsPage() {
+  const events = await getAllEvents();
+
   return (
     <section className={styles.events}>
       <h1 className={styles.eventsHeading}>Upcoming Events</h1>
       <div className={styles.eventsList}>
+        {events.length === 0 && <p>No events scheduled yet. Check back soon.</p>}
         {events.map((event) => (
-          <div key={event.title} className={styles.eventCard}>
+          <div key={event.id} className={styles.eventCard}>
             <div className={styles.eventGame}>{event.game}</div>
             <div className={styles.eventTitle}>{event.title}</div>
             <div className={styles.eventDate}>{event.date}</div>
