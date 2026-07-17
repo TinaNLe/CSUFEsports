@@ -17,6 +17,8 @@ export type EventItem = {
   game: string;
   title: string;
   date: string;
+  location: string;
+  format: string;
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -45,6 +47,8 @@ export async function getAllEvents(): Promise<EventItem[]> {
       game: textFrom(props.Category),
       title: textFrom(props["Event name"]),
       date: date || "TBD",
+      location: textFrom(props.Location),
+      format: textFrom(props.Format),
     };
   });
 }

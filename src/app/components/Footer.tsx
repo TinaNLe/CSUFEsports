@@ -46,7 +46,7 @@ export default function Footer() {
             <p className={styles.partnerText}>
               Interested in partnering with CSUF Gaming & Esports?
             </p>
-            <a href="mailto:csufgamingandesports@gmail.com" className={styles.link}>
+            <a href="mailto:csufgamingandesports@gmail.com" className={styles.emailButton}>
               Email Us
             </a>
           </div>

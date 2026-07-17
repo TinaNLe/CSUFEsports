@@ -26,6 +26,11 @@ export default async function Home() {
               <div className={styles.eventGame}>{event.game}</div>
               <div className={styles.eventTitle}>{event.title}</div>
               <div className={styles.eventDate}>{event.date}</div>
+              {(event.location || event.format) && (
+                <div className={styles.eventLocation}>
+                  {[event.location, event.format].filter(Boolean).join(" · ")}
+                </div>
+              )}
             </div>
           ))}
         </div>
