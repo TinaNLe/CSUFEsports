@@ -1,4 +1,5 @@
-import { Client, isFullBlock } from "@notionhq/client";
+import { Client, isFullBlock, isFullPage } from "@notionhq/client";
+import type { BlockObjectResponse } from "@notionhq/client/build/src/api-endpoints";
 import { NotionToMarkdown } from "notion-to-md";
 
 const notion = new Client({ auth: process.env.NOTION_API_KEY });
@@ -11,6 +12,67 @@ n2m.setCustomTransformer("paragraph", async (block) => {
   if (!isFullBlock(block) || block.type !== "paragraph") return false;
   const isEmpty = block.paragraph.rich_text.every((t) => !t.plain_text.trim());
   return isEmpty ? "<br />" : false;
+});
+
+// Notion has no real "center this image" toggle — centering is done by putting
+// the image in a column flanked by empty columns. That layout has no markdown
+// equivalent and gets flattened away by default, losing both the centering and
+// the narrower width. When a column_list is exactly "empty, one image, empty"
+// (or any single image column among empty ones), reproduce it directly as a
+// centered image sized to that column's actual width.
+n2m.setCustomTransformer("column_list", async (block) => {
+  if (!isFullBlock(block) || block.type !== "column_list") return false;
+
+  const columnsResponse = await notion.blocks.children.list({ block_id: block.id });
+  const columns = columnsResponse.results.filter(isFullBlock).filter((c) => c.type === "column");
+
+  let imageWidthPercent: number | null = null;
+  let imageBlock: BlockObjectResponse | null = null;
+  let onlyOneImageColumn = true;
+
+  // Columns are independent Notion API calls — fetch them concurrently rather
+  // than one at a time, since nothing here depends on another column's result.
+  const columnChildren = await Promise.all(
+    columns.map((column) =>
+      column.type === "column"
+        ? notion.blocks.children.list({ block_id: column.id })
+        : null
+    )
+  );
+
+  for (let i = 0; i < columns.length; i++) {
+    const column = columns[i];
+    const childrenResponse = columnChildren[i];
+    if (column.type !== "column" || !childrenResponse) continue;
+    const nonEmpty = childrenResponse.results.filter(isFullBlock).filter((c) => {
+      if (c.type === "paragraph") return c.paragraph.rich_text.some((t) => t.plain_text.trim());
+      return true;
+    });
+
+    if (nonEmpty.length === 0) continue;
+    if (nonEmpty.length === 1 && nonEmpty[0].type === "image") {
+      if (imageWidthPercent !== null) {
+        onlyOneImageColumn = false;
+      }
+      imageWidthPercent = Math.round((column.column.width_ratio ?? 1) * 100);
+      imageBlock = nonEmpty[0];
+    } else {
+      onlyOneImageColumn = false;
+    }
+  }
+
+  if (!onlyOneImageColumn || imageWidthPercent === null || !imageBlock || imageBlock.type !== "image") {
+    return false;
+  }
+
+  const imageData = imageBlock.image;
+  const url = imageData.type === "external" ? imageData.external.url : imageData.file.url;
+  const alt = imageData.caption.map((t) => t.plain_text).join("") || "image";
+
+  // next-mdx-remote strips object-valued `style` props on raw elements, so the
+  // width has to travel as a plain HTML attribute instead; centering comes
+  // from the `.prose img` rule (display: block; margin: auto) in news.module.css.
+  return `<img src=${JSON.stringify(url)} alt=${JSON.stringify(alt)} width="${imageWidthPercent}%" />`;
 });
 
 // The News tab is a plain Notion page — every child page under it is one article.
@@ -29,6 +91,16 @@ export type NewsMeta = {
   title: string;
   date: string;
   excerpt: string;
+  pageId: string;
+  image: string | null;
+};
+
+// What the article detail page actually needs to locate and render a page —
+// no excerpt, since only the list views show one.
+export type NewsArticleRef = {
+  slug: string;
+  title: string;
+  date: string;
   pageId: string;
 };
 
@@ -66,6 +138,14 @@ async function excerptForPage(pageId: string): Promise<string> {
   return "";
 }
 
+// The card image is whatever cover the user set on the article page in
+// Notion — nothing to configure, no separate "image" property to maintain.
+export async function getArticleCoverImage(pageId: string): Promise<string | null> {
+  const page = await notion.pages.retrieve({ page_id: pageId });
+  if (!isFullPage(page) || !page.cover) return null;
+  return page.cover.type === "external" ? page.cover.external.url : page.cover.file.url;
+}
+
 async function listArticlePages() {
   const response = await notion.blocks.children.list({ block_id: ROOT_PAGE_ID });
   return response.results
@@ -85,19 +165,30 @@ export async function getAllNews(): Promise<NewsMeta[]> {
   pages.sort((a, b) => (a.date < b.date ? 1 : -1));
 
   const articles = await Promise.all(
-    pages.map(async (page) => ({
-      slug: slugify(page.title),
-      title: page.title,
-      date: page.date,
-      excerpt: await excerptForPage(page.pageId),
-      pageId: page.pageId,
-    }))
+    pages.map(async (page) => {
+      const [excerpt, image] = await Promise.all([
+        excerptForPage(page.pageId),
+        getArticleCoverImage(page.pageId),
+      ]);
+      return {
+        slug: slugify(page.title),
+        title: page.title,
+        date: page.date,
+        excerpt,
+        image,
+        pageId: page.pageId,
+      };
+    })
   );
 
   return articles;
 }
 
-export async function getNewsBySlug(slug: string): Promise<NewsMeta | null> {
+// The detail page only needs enough to locate the page and render its
+// header — fetching an excerpt or cover image here would be wasted work
+// (the excerpt is never shown, and the cover is fetched in parallel with the
+// markdown conversion by the caller instead of blocking on it first).
+export async function getNewsBySlug(slug: string): Promise<NewsArticleRef | null> {
   if (!isConfigured) return null;
 
   const pages = await listArticlePages();
@@ -108,7 +199,6 @@ export async function getNewsBySlug(slug: string): Promise<NewsMeta | null> {
     slug,
     title: page.title,
     date: page.date,
-    excerpt: await excerptForPage(page.pageId),
     pageId: page.pageId,
   };
 }

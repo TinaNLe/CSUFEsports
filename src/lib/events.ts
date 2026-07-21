@@ -19,6 +19,7 @@ export type EventItem = {
   date: string;
   location: string;
   format: string;
+  image: string | null;
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -42,6 +43,13 @@ export async function getAllEvents(): Promise<EventItem[]> {
   return response.results.filter(isFullPage).map((page) => {
     const props = page.properties;
     const date = textFrom(props["Event date"]);
+    // The card image is whatever cover the user set on the event's row page in
+    // Notion — nothing to configure, no separate "image" property to maintain.
+    const image = page.cover
+      ? page.cover.type === "external"
+        ? page.cover.external.url
+        : page.cover.file.url
+      : null;
     return {
       id: page.id,
       game: textFrom(props.Category),
@@ -49,6 +57,7 @@ export async function getAllEvents(): Promise<EventItem[]> {
       date: date || "TBD",
       location: textFrom(props.Location),
       format: textFrom(props.Format),
+      image,
     };
   });
 }

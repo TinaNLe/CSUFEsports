@@ -23,14 +23,24 @@ export default async function Home() {
         <div className={styles.eventsList}>
           {events.map((event) => (
             <div key={event.id} className={styles.eventCard}>
-              <div className={styles.eventGame}>{event.game}</div>
-              <div className={styles.eventTitle}>{event.title}</div>
-              <div className={styles.eventDate}>{event.date}</div>
-              {(event.location || event.format) && (
-                <div className={styles.eventLocation}>
-                  {[event.location, event.format].filter(Boolean).join(" · ")}
+              {event.image && (
+                <div className={styles.eventMedia}>
+                  <img src={event.image} alt="" loading="lazy" />
+                  {event.game && <span className={styles.mediaLabel}>{event.game}</span>}
                 </div>
               )}
+              <div className={styles.eventBody}>
+                {!event.image && event.game && (
+                  <div className={styles.eventGame}>{event.game}</div>
+                )}
+                <div className={styles.eventTitle}>{event.title}</div>
+                <div className={styles.eventDate}>{event.date}</div>
+                {(event.location || event.format) && (
+                  <div className={styles.eventLocation}>
+                    {[event.location, event.format].filter(Boolean).join(" · ")}
+                  </div>
+                )}
+              </div>
             </div>
           ))}
         </div>
@@ -48,9 +58,17 @@ export default async function Home() {
                 href={`/news/${article.slug}`}
                 className={styles.eventCard}
               >
-                <div className={styles.eventGame}>{article.date}</div>
-                <div className={styles.eventTitle}>{article.title}</div>
-                <div className={styles.eventDate}>{article.excerpt}</div>
+                {article.image && (
+                  <div className={styles.eventMedia}>
+                    <img src={article.image} alt="" loading="lazy" />
+                    <span className={styles.mediaLabel}>{article.date}</span>
+                  </div>
+                )}
+                <div className={styles.eventBody}>
+                  {!article.image && <div className={styles.eventGame}>{article.date}</div>}
+                  <div className={styles.eventTitle}>{article.title}</div>
+                  <div className={styles.eventDate}>{article.excerpt}</div>
+                </div>
               </Link>
             ))}
           </div>

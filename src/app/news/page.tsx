@@ -23,9 +23,17 @@ export default async function NewsPage() {
               href={`/news/${article.slug}`}
               className={styles.card}
             >
-              <span className={styles.date}>{article.date}</span>
-              <h2 className={styles.cardTitle}>{article.title}</h2>
-              <p className={styles.excerpt}>{article.excerpt}</p>
+              {article.image && (
+                <div className={styles.cardMedia}>
+                  <img src={article.image} alt="" loading="lazy" />
+                  <span className={styles.mediaDate}>{article.date}</span>
+                </div>
+              )}
+              <div className={styles.cardBody}>
+                {!article.image && <span className={styles.date}>{article.date}</span>}
+                <h2 className={styles.cardTitle}>{article.title}</h2>
+                <p className={styles.excerpt}>{article.excerpt}</p>
+              </div>
             </Link>
           ))}
         </div>

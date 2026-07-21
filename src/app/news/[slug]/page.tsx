@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { MDXRemote } from "next-mdx-remote/rsc";
 import styles from "../news.module.css";
-import { getAllNews, getNewsBySlug, getNewsMarkdown } from "@/lib/news";
+import { getAllNews, getArticleCoverImage, getNewsBySlug, getNewsMarkdown } from "@/lib/news";
 
 export const revalidate = 60;
 
@@ -22,10 +22,20 @@ export default async function NewsArticlePage({
     notFound();
   }
 
-  const content = await getNewsMarkdown(article.pageId);
+  // These don't depend on each other — only on the pageId already resolved
+  // above — so run them concurrently instead of one after the other.
+  const [content, image] = await Promise.all([
+    getNewsMarkdown(article.pageId),
+    getArticleCoverImage(article.pageId),
+  ]);
 
   return (
     <div style={{ paddingTop: "80px" }}>
+      {image && (
+        <div className={styles.hero}>
+          <img src={image} alt="" />
+        </div>
+      )}
       <article className={styles.article}>
         <span className={styles.date}>{article.date}</span>
         <h1 className={styles.heading} style={{ fontSize: "44px" }}>

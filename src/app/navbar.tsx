@@ -12,13 +12,19 @@ const barlow = Barlow({
 });
 
 const links = [
-  { href: "/about", label: "ABOUT" },
   { href: "/news", label: "NEWS" },
   { href: "/events", label: "EVENTS" },
   { href: "/teams", label: "TEAMS" },
   { href: "/sponsors", label: "SPONSORS" },
-  { href: "/leadership", label: "LEADERSHIP" },
 ];
+
+const aboutDropdown = {
+  label: "ABOUT",
+  items: [
+    { href: "/about", label: "ABOUT" },
+    { href: "/leadership", label: "LEADERSHIP" },
+  ],
+};
 
 export default function NavBar() {
   return (
@@ -35,6 +41,18 @@ export default function NavBar() {
         />
       </Link>
       <ul className={styles.linkList}>
+        <li className={styles.dropdown}>
+          <span className={styles.navLink}>{aboutDropdown.label}</span>
+          <ul className={styles.dropdownMenu}>
+            {aboutDropdown.items.map((item) => (
+              <li key={item.href}>
+                <Link href={item.href} className={styles.dropdownLink}>
+                  {item.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </li>
         {links.map((link) => (
           <li key={link.href}>
             <Link href={link.href} className={styles.navLink}>
