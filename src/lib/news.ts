@@ -1,6 +1,7 @@
 import { Client, isFullBlock, isFullPage } from "@notionhq/client";
 import type { BlockObjectResponse } from "@notionhq/client/build/src/api-endpoints";
 import { NotionToMarkdown } from "notion-to-md";
+import { unstable_cache } from "next/cache";
 
 const notion = new Client({ auth: process.env.NOTION_API_KEY });
 const n2m = new NotionToMarkdown({ notionClient: notion });
@@ -122,41 +123,61 @@ function truncate(text: string): string {
 // block, image, and nested child recursively) is why the news list used to be
 // slow — all it actually needs is the first line of text. Reading just the
 // page's top-level blocks directly is far cheaper.
-async function excerptForPage(pageId: string): Promise<string> {
-  const response = await notion.blocks.children.list({ block_id: pageId, page_size: 10 });
+const excerptForPage = unstable_cache(
+  async (pageId: string): Promise<string> => {
+    const response = await notion.blocks.children.list({ block_id: pageId, page_size: 10 });
 
-  for (const block of response.results) {
-    if (!isFullBlock(block) || HEADING_TYPES.has(block.type)) continue;
+    for (const block of response.results) {
+      if (!isFullBlock(block) || HEADING_TYPES.has(block.type)) continue;
 
-    const richText = (block as unknown as Record<string, { rich_text?: { plain_text: string }[] }>)[
-      block.type
-    ]?.rich_text;
-    const text = (richText ?? []).map((t) => t.plain_text).join("").trim();
-    if (text) return truncate(text);
-  }
+      const richText = (block as unknown as Record<string, { rich_text?: { plain_text: string }[] }>)[
+        block.type
+      ]?.rich_text;
+      const text = (richText ?? []).map((t) => t.plain_text).join("").trim();
+      if (text) return truncate(text);
+    }
 
-  return "";
-}
+    return "";
+  },
+  ["news-excerpt"],
+  { revalidate: 60 }
+);
 
 // The card image is whatever cover the user set on the article page in
 // Notion — nothing to configure, no separate "image" property to maintain.
-export async function getArticleCoverImage(pageId: string): Promise<string | null> {
-  const page = await notion.pages.retrieve({ page_id: pageId });
-  if (!isFullPage(page) || !page.cover) return null;
-  return page.cover.type === "external" ? page.cover.external.url : page.cover.file.url;
-}
+//
+// The Notion SDK doesn't go through the global `fetch`, so none of these
+// calls get Next's automatic request/data caching — only the page-level
+// `revalidate` applies, and only to requests that hit the ISR cache. Any
+// request that regenerates a page (a brand-new slug, or the first hit after
+// invalidation) pays the full Notion round trip. Wrapping each call in
+// `unstable_cache` gives it its own persistent, keyed cache so a
+// regeneration reuses previously-fetched data instead of re-querying Notion.
+export const getArticleCoverImage = unstable_cache(
+  async (pageId: string): Promise<string | null> => {
+    const page = await notion.pages.retrieve({ page_id: pageId });
+    if (!isFullPage(page) || !page.cover) return null;
+    return page.cover.type === "external" ? page.cover.external.url : page.cover.file.url;
+  },
+  ["news-cover-image"],
+  { revalidate: 60 }
+);
 
-async function listArticlePages() {
-  const response = await notion.blocks.children.list({ block_id: ROOT_PAGE_ID });
-  return response.results
-    .filter(isFullBlock)
-    .filter((block) => block.type === "child_page")
-    .map((block) => ({
-      pageId: block.id,
-      title: block.child_page.title,
-      date: block.created_time.slice(0, 10),
-    }));
-}
+const listArticlePages = unstable_cache(
+  async () => {
+    const response = await notion.blocks.children.list({ block_id: ROOT_PAGE_ID });
+    return response.results
+      .filter(isFullBlock)
+      .filter((block) => block.type === "child_page")
+      .map((block) => ({
+        pageId: block.id,
+        title: block.child_page.title,
+        date: block.created_time.slice(0, 10),
+      }));
+  },
+  ["news-article-pages"],
+  { revalidate: 60 }
+);
 
 export async function getAllNews(): Promise<NewsMeta[]> {
   if (!isConfigured) return [];
@@ -203,8 +224,16 @@ export async function getNewsBySlug(slug: string): Promise<NewsArticleRef | null
   };
 }
 
-export async function getNewsMarkdown(pageId: string): Promise<string> {
-  const mdBlocks = await n2m.pageToMarkdown(pageId);
-  const { parent } = n2m.toMarkdownString(mdBlocks);
-  return parent ?? "";
-}
+// The expensive part: notion-to-md recursively walks the whole block tree
+// (nested columns included), each level its own Notion API call. Caching the
+// final markdown by pageId means that walk only happens once per revalidate
+// window, not on every regeneration.
+export const getNewsMarkdown = unstable_cache(
+  async (pageId: string): Promise<string> => {
+    const mdBlocks = await n2m.pageToMarkdown(pageId);
+    const { parent } = n2m.toMarkdownString(mdBlocks);
+    return parent ?? "";
+  },
+  ["news-markdown"],
+  { revalidate: 60 }
+);

@@ -1,8 +1,10 @@
 import Link from "next/link";
 import styles from "./page.module.css";
 import HeroVideo from "./components/HeroVideo";
+import ScrollReveal from "./components/ScrollReveal";
 import { getAllNews } from "@/lib/news";
 import { getAllEvents } from "@/lib/events";
+import { formatDate } from "@/lib/date";
 
 export const revalidate = 60;
 
@@ -14,65 +16,71 @@ export default async function Home() {
 
   return (
     <>
+    { /* Change this when video is ready
       <HeroVideo />
-
-      <section id="events" className={styles.events}>
-        <h1 className={styles.eventsHeading}>
-          <Link href="/events">Upcoming Events</Link>
-        </h1>
-        <div className={styles.eventsList}>
-          {events.map((event) => (
-            <div key={event.id} className={styles.eventCard}>
-              {event.image && (
-                <div className={styles.eventMedia}>
-                  <img src={event.image} alt="" loading="lazy" />
-                  {event.game && <span className={styles.mediaLabel}>{event.game}</span>}
-                </div>
-              )}
-              <div className={styles.eventBody}>
-                {!event.image && event.game && (
-                  <div className={styles.eventGame}>{event.game}</div>
-                )}
-                <div className={styles.eventTitle}>{event.title}</div>
-                <div className={styles.eventDate}>{event.date}</div>
-                {(event.location || event.format) && (
-                  <div className={styles.eventLocation}>
-                    {[event.location, event.format].filter(Boolean).join(" · ")}
-                  </div>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {news.length > 0 && (
-        <section id="news" className={styles.events}>
+    */ }
+      <HeroVideo />
+      <ScrollReveal>
+        <section id="events" className={styles.events}>
           <h1 className={styles.eventsHeading}>
-            <Link href="/news">Latest News</Link>
+            <Link href="/events">UPCOMING EVENTS</Link>
           </h1>
           <div className={styles.eventsList}>
-            {news.map((article) => (
-              <Link
-                key={article.slug}
-                href={`/news/${article.slug}`}
-                className={styles.eventCard}
-              >
-                {article.image && (
-                  <div className={styles.eventMedia}>
-                    <img src={article.image} alt="" loading="lazy" />
-                    <span className={styles.mediaLabel}>{article.date}</span>
-                  </div>
-                )}
-                <div className={styles.eventBody}>
-                  {!article.image && <div className={styles.eventGame}>{article.date}</div>}
-                  <div className={styles.eventTitle}>{article.title}</div>
-                  <div className={styles.eventDate}>{article.excerpt}</div>
+            {events.map((event) => (
+              <div key={event.id} className={styles.eventCard}>
+                <div
+                  className={styles.eventMedia}
+                  style={!event.image ? { backgroundColor: "#ffffff" } : undefined}
+                >
+                  {event.image && <img src={event.image} alt={event.title} />}
+                  {event.game && <span className={styles.mediaLabel}>{event.game}</span>}
                 </div>
-              </Link>
+                <div className={styles.eventBody}>
+                  <div className={styles.eventTitle}>{event.title}</div>
+                  <div className={styles.eventDate}>{formatDate(event.date)}</div>
+                  {(event.location || event.format) && (
+                    <div className={styles.eventLocation}>
+                      {[event.location, event.format].filter(Boolean).join(" · ")}
+                    </div>
+                  )}
+                </div>
+              </div>
             ))}
           </div>
         </section>
+      </ScrollReveal>
+
+      {news.length > 0 && (
+        <ScrollReveal>
+          <section id="news" className={styles.events}>
+            <h1 className={styles.eventsHeading}>
+              <Link href="/news">LATEST NEWS</Link>
+            </h1>
+            <div className={styles.eventsList}>
+              {news.map((article) => (
+                <Link
+                  key={article.slug}
+                  href={`/news/${article.slug}`}
+                  className={styles.eventCard}
+                >
+                  <div
+                    className={styles.eventMedia}
+                    style={!article.image ? { backgroundColor: "#ffffff" } : undefined}
+                  >
+                    {article.image && (
+                      <img src={article.image} alt={article.title} loading="lazy" />
+                    )}
+                    <span className={styles.mediaLabel}>{formatDate(article.date)}</span>
+                  </div>
+                  <div className={styles.eventBody}>
+                    <div className={styles.eventTitle}>{article.title}</div>
+                    <div className={styles.eventDate}>{article.excerpt}</div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </section>
+        </ScrollReveal>
       )}
 
       <section id="teams">

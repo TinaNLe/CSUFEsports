@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { MDXRemote } from "next-mdx-remote/rsc";
 import styles from "../news.module.css";
 import { getAllNews, getArticleCoverImage, getNewsBySlug, getNewsMarkdown } from "@/lib/news";
+import { formatDate } from "@/lib/date";
 
 export const revalidate = 60;
 
@@ -33,11 +34,11 @@ export default async function NewsArticlePage({
     <div style={{ paddingTop: "80px" }}>
       {image && (
         <div className={styles.hero}>
-          <img src={image} alt="" />
+          <img src={image} alt={article.title} />
         </div>
       )}
       <article className={styles.article}>
-        <span className={styles.date}>{article.date}</span>
+        <span className={styles.date}>{formatDate(article.date)}</span>
         <h1 className={styles.heading} style={{ fontSize: "44px" }}>
           {article.title}
         </h1>

@@ -8,6 +8,45 @@
   margin-bottom: 40px;
 }
 
+.searchWrap {
+  position: relative;
+  width: 100%;
+  max-width: 420px;
+  margin: 0 0 32px;
+}
+
+.searchIcon {
+  position: absolute;
+  top: 50%;
+  left: 14px;
+  transform: translateY(-50%);
+  width: 18px;
+  height: 18px;
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.searchInput {
+  display: block;
+  width: 100%;
+  padding: 12px 16px 12px 42px;
+  border: 1px solid #333333;
+  border-radius: 8px;
+  background-color: rgba(255, 255, 255, 0.02);
+  color: inherit;
+  font-size: 16px;
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: #5c6a7a;
+}
+
+.searchInput::placeholder {
+  color: inherit;
+  opacity: 0.5;
+}
+
 .list {
   display: flex;
   flex-wrap: wrap;
@@ -16,9 +55,9 @@
 }
 
 .card {
-  flex: 1 1 320px;
+  flex: 1 1 1000px;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   border: 1px solid #333333;
   border-radius: 10px;
   overflow: hidden;
@@ -35,9 +74,22 @@
 
 .cardMedia {
   position: relative;
-  aspect-ratio: 16 / 9;
+  width: 280px;
+  flex: 0 0 280px;
   overflow: hidden;
   background-color: #0a1626;
+}
+
+@media (max-width: 600px) {
+  .card {
+    flex-direction: column;
+  }
+
+  .cardMedia {
+    width: 100%;
+    flex: 0 0 auto;
+    aspect-ratio: 16 / 9;
+  }
 }
 
 .cardMedia img {
