@@ -38,6 +38,7 @@ export default async function NewsArticlePage({
         </div>
       )}
       <article className={styles.article}>
+        {article.genre && <span className={styles.genreTagPlain}>{article.genre}</span>}
         <span className={styles.date}>{formatDate(article.date)}</span>
         <h1 className={styles.heading} style={{ fontSize: "44px" }}>
           {article.title}

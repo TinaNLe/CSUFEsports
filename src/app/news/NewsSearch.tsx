@@ -66,6 +66,7 @@ export default function NewsList({ articles }: { articles: NewsMeta[] }) {
               <span className={styles.mediaDate}>{formatDate(article.date)}</span>
             </div>
             <div className={styles.cardBody}>
+              {article.genre && <span className={styles.genreTag}>{article.genre}</span>}
               <h2 className={styles.cardTitle}>{article.title}</h2>
               <p className={styles.excerpt}>{article.excerpt}</p>
             </div>

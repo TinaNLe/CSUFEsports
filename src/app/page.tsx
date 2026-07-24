@@ -73,6 +73,7 @@ export default async function Home() {
                     <span className={styles.mediaLabel}>{formatDate(article.date)}</span>
                   </div>
                   <div className={styles.eventBody}>
+                    {article.genre && <div className={styles.eventGame}>{article.genre}</div>}
                     <div className={styles.eventTitle}>{article.title}</div>
                     <div className={styles.eventDate}>{article.excerpt}</div>
                   </div>

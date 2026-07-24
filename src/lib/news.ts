@@ -76,14 +76,16 @@ n2m.setCustomTransformer("column_list", async (block) => {
   return `<img src=${JSON.stringify(url)} alt=${JSON.stringify(alt)} width="${imageWidthPercent}%" />`;
 });
 
-// The News tab is a plain Notion page — every child page under it is one article.
-const ROOT_PAGE_ID = process.env.NOTION_NEWS_PAGE_ID ?? "";
+// The News tab is a Notion database — every row is one article, with a
+// "Genre" select property for categorization (see events.ts for the same
+// pattern applied to Events).
+const DATABASE_ID = process.env.NOTION_NEWS_DATABASE_ID ?? "";
 
-const isConfigured = Boolean(process.env.NOTION_API_KEY && ROOT_PAGE_ID);
+const isConfigured = Boolean(process.env.NOTION_API_KEY && DATABASE_ID);
 
 if (!isConfigured) {
   console.warn(
-    "[news] NOTION_API_KEY / NOTION_NEWS_PAGE_ID are not set — the News tab will show no articles until configured (see .env.local.example)."
+    "[news] NOTION_API_KEY / NOTION_NEWS_DATABASE_ID are not set — the News tab will show no articles until configured (see .env.local.example)."
   );
 }
 
@@ -94,6 +96,7 @@ export type NewsMeta = {
   excerpt: string;
   pageId: string;
   image: string | null;
+  genre: string;
 };
 
 // What the article detail page actually needs to locate and render a page —
@@ -103,7 +106,17 @@ export type NewsArticleRef = {
   title: string;
   date: string;
   pageId: string;
+  genre: string;
 };
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function textFrom(prop: any): string {
+  if (!prop) return "";
+  if (prop.type === "title") return prop.title.map((t: { plain_text: string }) => t.plain_text).join("");
+  if (prop.type === "rich_text") return prop.rich_text.map((t: { plain_text: string }) => t.plain_text).join("");
+  if (prop.type === "select") return prop.select?.name ?? "";
+  return "";
+}
 
 function slugify(title: string): string {
   return title
@@ -165,15 +178,16 @@ export const getArticleCoverImage = unstable_cache(
 
 const listArticlePages = unstable_cache(
   async () => {
-    const response = await notion.blocks.children.list({ block_id: ROOT_PAGE_ID });
-    return response.results
-      .filter(isFullBlock)
-      .filter((block) => block.type === "child_page")
-      .map((block) => ({
-        pageId: block.id,
-        title: block.child_page.title,
-        date: block.created_time.slice(0, 10),
-      }));
+    const response = await notion.databases.query({
+      database_id: DATABASE_ID,
+      sorts: [{ timestamp: "created_time", direction: "descending" }],
+    });
+    return response.results.filter(isFullPage).map((page) => ({
+      pageId: page.id,
+      title: textFrom(page.properties.Name ?? page.properties.Title),
+      date: page.created_time.slice(0, 10),
+      genre: textFrom(page.properties.Genre),
+    }));
   },
   ["news-article-pages"],
   { revalidate: 60 }
@@ -183,7 +197,6 @@ export async function getAllNews(): Promise<NewsMeta[]> {
   if (!isConfigured) return [];
 
   const pages = await listArticlePages();
-  pages.sort((a, b) => (a.date < b.date ? 1 : -1));
 
   const articles = await Promise.all(
     pages.map(async (page) => {
@@ -198,6 +211,7 @@ export async function getAllNews(): Promise<NewsMeta[]> {
         excerpt,
         image,
         pageId: page.pageId,
+        genre: page.genre,
       };
     })
   );
@@ -221,6 +235,7 @@ export async function getNewsBySlug(slug: string): Promise<NewsArticleRef | null
     title: page.title,
     date: page.date,
     pageId: page.pageId,
+    genre: page.genre,
   };
 }
 
