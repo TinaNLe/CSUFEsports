@@ -11,6 +11,7 @@ if (!isConfigured) {
   console.warn(
     "[achievements] NOTION_API_KEY / NOTION_ESPORTS_ACHIEVEMENTS_ID are not set — team achievements will be empty until configured (see .env.local.example)."
   );
+}
 
 export type TextSegment = {
   text: string;

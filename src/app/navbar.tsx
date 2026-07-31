@@ -21,7 +21,7 @@ const links = [
 const aboutDropdown = {
   label: "ABOUT",
   items: [
-    { href: "/about", label: "ABOUT" },
+    { href: "/ourmission", label: "OUR MISSION" },
     { href: "/leadership", label: "LEADERSHIP" },
   ],
 };

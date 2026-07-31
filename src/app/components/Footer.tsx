@@ -12,7 +12,8 @@ const socials = [
 ];
 
 const links = [
-  { href: "/about", label: "About" },
+  { href: "/ourmission", label: "About" },
+  { href: "/leadership", label: "Leadership" },
   { href: "/events", label: "Events" },
   { href: "/teams", label: "Teams" },
   { href: "/sponsors", label: "Sponsors" },
