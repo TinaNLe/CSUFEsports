@@ -26,6 +26,9 @@ export default async function Home() {
             <Link href="/events">UPCOMING EVENTS</Link>
           </h1>
           <div className={styles.eventsList}>
+            {events.length === 0 && (
+              <p className={styles.empty}>No events scheduled yet. Check back soon.</p>
+            )}
             {events.map((event) => (
               <div key={event.id} className={styles.eventCard}>
                 <div
@@ -50,39 +53,40 @@ export default async function Home() {
         </section>
       </ScrollReveal>
 
-      {news.length > 0 && (
-        <ScrollReveal>
-          <section id="news" className={styles.events}>
-            <h1 className={styles.eventsHeading}>
-              <Link href="/news">LATEST NEWS</Link>
-            </h1>
-            <div className={styles.eventsList}>
-              {news.map((article) => (
-                <Link
-                  key={article.slug}
-                  href={`/news/${article.slug}`}
-                  className={styles.eventCard}
+      <ScrollReveal>
+        <section id="news" className={styles.events}>
+          <h1 className={styles.eventsHeading}>
+            <Link href="/news">LATEST NEWS</Link>
+          </h1>
+          <div className={styles.eventsList}>
+            {news.length === 0 && (
+              <p className={styles.empty}>No articles yet. Check back soon.</p>
+            )}
+            {news.map((article) => (
+              <Link
+                key={article.slug}
+                href={`/news/${article.slug}`}
+                className={styles.eventCard}
+              >
+                <div
+                  className={styles.eventMedia}
+                  style={!article.image ? { backgroundColor: "#ffffff" } : undefined}
                 >
-                  <div
-                    className={styles.eventMedia}
-                    style={!article.image ? { backgroundColor: "#ffffff" } : undefined}
-                  >
-                    {article.image && (
-                      <img src={article.image} alt={article.title} loading="lazy" />
-                    )}
-                    <span className={styles.mediaLabel}>{formatDate(article.date)}</span>
-                  </div>
-                  <div className={styles.eventBody}>
-                    {article.genre && <div className={styles.eventGame}>{article.genre}</div>}
-                    <div className={styles.eventTitle}>{article.title}</div>
-                    <div className={styles.eventDate}>{article.excerpt}</div>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </section>
-        </ScrollReveal>
-      )}
+                  {article.image && (
+                    <img src={article.image} alt={article.title} loading="lazy" />
+                  )}
+                  <span className={styles.mediaLabel}>{formatDate(article.date)}</span>
+                </div>
+                <div className={styles.eventBody}>
+                  {article.genre && <div className={styles.eventGame}>{article.genre}</div>}
+                  <div className={styles.eventTitle}>{article.title}</div>
+                  <div className={styles.eventDate}>{article.excerpt}</div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+      </ScrollReveal>
 
       <section id="teams">
 

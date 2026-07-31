@@ -1,0 +1,254 @@
+.teams {
+  padding: 80px 60px;
+}
+
+.marqueeWrapper {
+  overflow: hidden;
+  white-space: nowrap;
+  width: 100vw;
+  position: relative;
+  left: 50%;
+  right: 50%;
+  margin-left: -50vw;
+  margin-right: -50vw;
+  background-color: #000c1a;
+  padding: 12px 0;
+  margin-bottom: 48px;
+}
+
+.marqueeTrack {
+  display: flex;
+  width: max-content;
+  animation: marquee 30s ease-in-out infinite alternate;
+}
+
+.marqueeGroup {
+  display: flex;
+  flex-shrink: 0;
+}
+
+.marqueeText {
+  display: inline-block;
+  white-space: nowrap;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 4px;
+  color: #ffffff;
+  padding-right: 80px;
+}
+
+@keyframes marquee {
+  from { transform: translateX(-10%); }
+  to { transform: translateX(0); }
+}
+
+.heading {
+  font-size: 60px;
+  font-weight: 900;
+  margin-bottom: 12px;
+}
+
+.subheading {
+  font-size: 18px;
+  line-height: 1.6;
+  opacity: 0.75;
+  max-width: 700px;
+  margin-bottom: 48px;
+}
+
+.sectionLabel {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  opacity: 0.55;
+  margin-bottom: 20px;
+}
+
+.tableCard {
+  width: 100%;
+  margin-bottom: 72px;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 220px 1fr auto;
+  align-items: center;
+  gap: 20px;
+  padding: 18px 16px;
+  border-bottom: 1px solid #333333;
+  border-radius: 8px;
+  transition: background-color 0.2s ease;
+}
+
+.row:last-child {
+  border-bottom: none;
+}
+
+.row:not(.headerRow):hover {
+  background-color: rgba(255, 255, 255, 0.03);
+}
+
+.headerRow {
+  padding: 0 16px 14px;
+}
+
+.headerCell {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  opacity: 0.5;
+}
+
+.gameCell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.gameLogo {
+  width: 36px;
+  height: 36px;
+  border: 1px solid #333333;
+  border-radius: 8px;
+  object-fit: cover;
+  flex-shrink: 0;
+  background-color: #0a1626;
+}
+
+.gameBadge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid #333333;
+  border-radius: 8px;
+  flex-shrink: 0;
+  background-color: #0a1626;
+  font-size: 14px;
+  font-weight: 900;
+  opacity: 0.7;
+}
+
+.gameName {
+  font-size: 16px;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.achievementCell {
+  font-size: 15px;
+  opacity: 0.85;
+}
+
+.achievementLink {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: rgba(255, 255, 255, 0.35);
+  text-underline-offset: 3px;
+  transition: text-decoration-color 0.2s ease;
+}
+
+.achievementLink:hover {
+  text-decoration-color: #380cd6;
+}
+
+.dateCell {
+  justify-self: end;
+  padding: 4px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  opacity: 0.6;
+  white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+  .row {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    justify-items: start;
+  }
+
+  .dateCell {
+    justify-self: start;
+  }
+}
+
+.cardList {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 28px;
+}
+
+@media (max-width: 900px) {
+  .cardList {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 520px) {
+  .cardList {
+    grid-template-columns: 1fr;
+  }
+}
+
+.teamCard {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #333333;
+  border-radius: 10px;
+  overflow: hidden;
+  color: inherit;
+  background-color: rgba(255, 255, 255, 0.02);
+  transition: border-color 0.25s ease, transform 0.25s ease;
+}
+
+.teamCard:hover {
+  border-color: #5c6a7a;
+  transform: translateY(-3px);
+}
+
+.teamMedia {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background-color: #0a1626;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.5s ease;
+}
+
+.teamCard:hover .teamMedia {
+  transform: scale(1.03);
+}
+
+.teamInitial {
+  font-size: 56px;
+  font-weight: 900;
+  color: rgba(255, 255, 255, 0.14);
+  letter-spacing: 2px;
+}
+
+.teamBody {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding: 20px 22px 22px;
+}
+
+.teamCardTitle {
+  font-size: 22px;
+  font-weight: 900;
+  text-align: center;
+}

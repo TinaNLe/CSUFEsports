@@ -4,9 +4,11 @@ import styles from "./Footer.module.css";
 
 const socials = [
   { href: "https://twitter.com/csufesports", label: "Twitter" },
-  { href: "https://tiktok.com/@csufesports", label: "TikTok" },
-  { href: "https://discord.gg/csufesports", label: "Discord" },
+  { href: "https://tiktok.com/@csufgamingandesports", label: "TikTok" },
+  { href: "https://discord.gg/H9m4gRzj4g", label: "Discord" },
   { href: "https://twitch.tv/csufesports", label: "Twitch" },
+  { href: "https://www.instagram.com/csufgamingandesports/", label: "Instagram" },
+  { href: "https://www.youtube.com/@csufgamingandesports", label: "YouTube" },
 ];
 
 const links = [

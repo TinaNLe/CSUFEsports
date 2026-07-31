@@ -11,7 +11,9 @@ export default async function EventsPage() {
     <section className={styles.events}>
       <h1 className={styles.eventsHeading}>Upcoming Events</h1>
       <div className={`${styles.eventsList} ${styles.eventsListLeft}`}>
-        {events.length === 0 && <p>No events scheduled yet. Check back soon.</p>}
+        {events.length === 0 && (
+          <p className={styles.empty}>No events scheduled yet. Check back soon.</p>
+        )}
         {events.map((event) => (
           <div key={event.id} className={styles.eventCard}>
             <div
